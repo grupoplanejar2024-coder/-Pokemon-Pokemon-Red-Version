@@ -6,219 +6,147 @@
     <title>Pokémon: Red Version - Kubo Touch</title>
     <style>
         * { box-sizing: border-box; }
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            min-height: 100%; 
-            background-color: #121212; 
-            color: #fff; 
-            font-family: Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            overflow-x: hidden; 
-        }
-        
-        header { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            text-align: center; 
-            padding: 15px; 
-            background: #1e1e1e; 
-            z-index: 5; 
-        }
-        
-        .badge { 
-            background: #333333; 
-            color: #fff; 
-            padding: 4px 12px; 
-            border-radius: 20px; 
-            font-weight: bold; 
-            font-size: 14px; 
-            border: 1px solid #555; 
-        }
-        
-        #game-card { 
+
+        html, body {
+            margin: 0;
+            padding: 0;
             width: 100%;
-            max-width: 440px; 
-            margin: 80px 20px 20px 20px; 
-            background: #1e1e1e; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
+            min-height: 100%;
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        body { overflow-x: hidden; overflow-y: auto; }
+        body.playing { overflow: hidden; }
+
+        header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            text-align: center;
+            padding: 15px;
+            background: #1e1e1e;
+            z-index: 5;
+        }
+
+        .badge {
+            background: #333333;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            border: 1px solid #555;
+        }
+
+        #game-card {
+            width: calc(100% - 40px);
+            max-width: 440px;
+            margin: 24px auto;
+            background: #1e1e1e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+
+        /* ---------- CARTUCHO 3D (foto na frente + fatias para a espessura) ---------- */
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             perspective: 1000px;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: pan-y;
+            background: radial-gradient(ellipse at 50% 85%, #2c2c34 0%, #1e1e1e 70%);
         }
-        
-        /* Container 3D Interativo */
-        .cartridge-wrapper {
-            width: 100%;
-            padding: 25px 10px 15px 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .scene.grabbing { cursor: grabbing; }
+
+        .cart {
+            --w: 240px;
+            --d: calc(var(--w) * 0.14);   /* espessura do cartucho */
+            position: relative;
+            width: var(--w);
+            height: calc(var(--w) * 391 / 339);
             transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-            cursor: pointer;
-        }
-
-        /* Cartucho Game Boy Vermelho */
-        .gb-cart-body {
-            width: 240px;
-            height: 274px;
-            position: relative;
-            background: linear-gradient(180deg, #e02424 0%, #b51515 100%);
-            border-radius: 8px 6px 6px 6px;
-            clip-path: polygon(0 0, calc(100% - 22px) 0, calc(100% - 22px) 16px, 100% 16px, 100% 100%, 0 100%);
-            box-shadow: 
-                inset 0 2px 3px rgba(255,150,150,0.45),
-                inset 0 -4px 7px rgba(60,0,0,0.48),
-                inset 3px 0 4px rgba(255,130,130,0.25),
-                inset -3px 0 4px rgba(60,0,0,0.45);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 16px 0 10px 0;
-            transform: translateZ(20px);
-            filter: drop-shadow(0 15px 22px rgba(0,0,0,0.75));
-        }
-
-        /* Faixa superior com logotipo em relevo */
-        .gb-top-band {
-            width: 100%;
-            height: 40px;
-            padding: 0 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .gb-logo-oval {
-            width: 100%;
-            height: 36px;
-            background: linear-gradient(180deg, #c21818 0%, #d42020 100%);
-            border-radius: 18px;
-            box-shadow: 
-                inset 0 2px 4px rgba(55,0,0,0.5),
-                0 1px 1px rgba(255,160,160,0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .gb-logo-text {
-            font-size: 11px;
-            font-weight: 900;
-            font-style: italic;
-            letter-spacing: 0.4px;
-            color: #961010;
-            text-shadow: 0 1px 0 rgba(255,140,140,0.35), 0 -1px 0 rgba(50,0,0,0.45);
-            white-space: nowrap;
-        }
-
-        .gb-logo-text small {
-            font-style: normal;
-            font-size: 7px;
-            font-weight: 800;
-            margin-left: 2px;
-        }
-
-        /* Cavidade central do adesivo (Label) */
-        .gb-label-recess {
-            width: 184px;
-            height: 164px;
-            margin-top: 12px;
-            padding: 3px;
-            background: #9c1212;
-            border-radius: 6px;
-            box-shadow: inset 0 2px 4px rgba(45,0,0,0.6), 0 1px 1px rgba(255,150,150,0.3);
-            display: flex;
-        }
-
-        .gb-label-sticker {
-            width: 100%;
-            height: 100%;
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            background: #c92a2a;
-            border: 1px solid #3a0808;
-        }
-
-        /* Capa do jogo ajustada ao enquadramento de referência */
-        .gb-sticker-art {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            background-color: #c92a2a;
-            overflow: hidden;
-        }
-
-        .gb-sticker-art img {
-            width: 118%;
-            height: 102%;
-            max-width: none;
-            object-fit: cover;
-            object-position: center;
-            transform: translate(-14.5%, -1%) translateZ(0);
-            image-rendering: -webkit-optimize-contrast;
-            filter: contrast(1.04) saturate(1.06);
-            backface-visibility: hidden;
             will-change: transform;
-            display: block;
         }
-
-        /* Reflexo sutil no adesivo ao passar o mouse / tocar */
-        .gb-label-sticker::after {
-            content: '';
+        .cart .slice,
+        .cart .front,
+        .cart .back {
             position: absolute;
-            top: 0; left: -120%;
-            width: 65%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
-            transform: skewX(-25deg);
-            transition: left 0.6s ease;
-            z-index: 3;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
         }
+        .cart img { display: block; width: 100%; height: 100%; -webkit-user-drag: none; }
 
-        .gb-cart-body:hover .gb-label-sticker::after {
-            left: 160%;
+        .cart .front {
+            --shine: 50%;
+            transform: translateZ(calc(var(--d) / 2));
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        /* Reflexo que percorre só o contorno do cartucho */
+        .cart .front::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                105deg,
+                transparent calc(var(--shine) - 16%),
+                rgba(255,255,255,0.30) var(--shine),
+                transparent calc(var(--shine) + 16%)
+            );
+            -webkit-mask-image: url('pokemon-red-cartridge.png');
+            mask-image: url('pokemon-red-cartridge.png');
+            -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+        }
+        .cart .back {
+            transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
-        /* Triângulo inferior do cartucho */
-        .gb-bottom-triangle {
-            margin-top: 8px;
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 15px solid #a81313;
-            filter: drop-shadow(0 1px 0 rgba(255,150,150,0.3));
+        .floor-shadow {
+            position: absolute;
+            bottom: 14px;
+            left: 50%;
+            width: 62%;
+            height: 22px;
+            transform: translateX(-50%);
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%);
+            pointer-events: none;
         }
+        .hint { text-align: center; font-size: 12px; color: #888; padding: 6px 0 0; }
 
+        /* ---------- CONTEÚDO ---------- */
         .content { padding: 20px; }
         h1 { margin: 0 0 10px 0; font-size: 22px; color: #e5e5e5; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .meta-info { display: flex; gap: 10px; margin-bottom: 15px; font-size: 13px; color: #aaa; }
+        .meta-info { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; font-size: 13px; color: #aaa; }
         .description { font-size: 14px; line-height: 1.5; color: #ddd; margin-bottom: 15px; }
         .details { font-size: 13px; color: #bbb; margin-bottom: 20px; }
         .details ul { padding-left: 20px; margin: 0; }
-        
-        .btn-play { 
-            display: block; 
-            width: 100%; 
-            padding: 16px; 
-            background: #2b2b2b; 
-            color: #fff; 
-            border: 1px solid #555; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            font-size: 18px; 
-            cursor: pointer; 
-            text-align: center; 
+
+        .btn-play {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: #2b2b2b;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
             outline: none;
             position: relative;
             z-index: 10;
@@ -226,24 +154,48 @@
         }
         .btn-play:hover { background: #3b3b3b; transform: translateY(-2px); }
         .btn-play:active { background: #1f1f1f; transform: translateY(0); }
+        .btn-play:disabled { opacity: .6; cursor: wait; transform: none; }
 
-        #game-container { 
-            display: none; 
+        /* ---------- JOGO em tela cheia ---------- */
+        #game-container {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%; 
-            height: 100%; 
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
             z-index: 99999;
             background: #000;
         }
+        #game-container.active { display: block; }
         #game { width: 100%; height: 100%; }
 
-        /* Responsividade para telas de celulares menores */
+        #btn-back {
+            display: none;
+            position: fixed;
+            top: 8px;
+            right: 8px;
+            z-index: 100000;
+            padding: 8px 12px;
+            background: rgba(0,0,0,.6);
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        body.playing #btn-back { display: block; }
+
+        #error-box { display: none; position: fixed; inset: 0; z-index: 100001; background: #121212; padding: 24px; overflow-y: auto; line-height: 1.6; font-size: 14px; }
+        #error-box.active { display: block; }
+        #error-box b.err { color: #e74c3c; }
+        #error-box code { display: block; background: #1e1e1e; padding: 8px; border-radius: 4px; margin: 4px 0; word-break: break-all; font-size: 12px; color: #ccc; }
+        #error-box button { margin-top: 16px; padding: 10px 18px; background: #555; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; }
+
         @media (max-width: 400px) {
-            .gb-cart-body {
-                transform: scale(0.9) translateZ(20px);
-            }
+            .cart { --w: 205px; }
+            .scene { height: 300px; }
         }
     </style>
 </head>
@@ -254,33 +206,19 @@
     </header>
 
     <div id="game-card">
-        <!-- Cartucho Game Boy 3D -->
-        <div class="cartridge-wrapper" id="cartridge3d">
-            <div class="gb-cart-body">
-                <!-- Topo com logotipo em relevo -->
-                <div class="gb-top-band">
-                    <div class="gb-logo-oval">
-                        <span class="gb-logo-text">Nintendo GAME BOY<small>TM</small></span>
-                    </div>
-                </div>
-
-                <!-- Cavidade e Adesivo do Cartucho -->
-                <div class="gb-label-recess">
-                    <div class="gb-label-sticker">
-                        <div class="gb-sticker-art">
-                            <img src="pokemon_red_version_game_boy_hq_box_art_by_jadelune_d9tkrbj-pre.jpg" alt="Capa Pokémon: Red Version">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Triângulo inferior do cartucho -->
-                <div class="gb-bottom-triangle"></div>
+        <!-- Cartucho 3D: frente (foto), fatias (espessura) e verso -->
+        <div class="scene" id="scene">
+            <div class="cart" id="cart">
+                <div class="back"><img src="pokemon-red-back.png" alt=""></div>
+                <div class="front" id="front"><img src="pokemon-red-cartridge.png" alt="Cartucho Pokémon: Red Version"></div>
             </div>
+            <div class="floor-shadow"></div>
         </div>
-        
+        <div class="hint">Arraste para girar o cartucho</div>
+
         <div class="content">
             <h1>Pokémon: Red Version</h1>
-            
+
             <div class="meta-info">
                 <span>🎮 1 Jogador</span>
                 <span>📅 1996 / 1998</span>
@@ -301,56 +239,198 @@
         </div>
     </div>
 
+    <button id="btn-back">✕ Sair</button>
+
     <div id="game-container">
         <div id="game"></div>
     </div>
 
-    <script type="text/javascript">
-        // Efeito 3D interativo
-        const card = document.getElementById('game-card');
-        const cartridge = document.getElementById('cartridge3d');
+    <div id="error-box"></div>
 
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            
-            const rotateX = (-y / 14).toFixed(2);
-            const rotateY = (x / 14).toFixed(2);
-            
-            cartridge.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+    <script>
+        /* ================== CARTUCHO 3D ================== */
+        var scene = document.getElementById('scene');
+        var cart  = document.getElementById('cart');
+        var front = document.getElementById('front');
+
+        // Espessura: várias cópias da silhueta empilhadas entre a frente e o verso
+        var SLICES = 36;
+        for (var i = 0; i < SLICES; i++) {
+            var f = ((i + 0.5) / SLICES) - 0.5;            // -0.5 (verso) ... +0.5 (frente)
+            var s = document.createElement('div');
+            s.className = 'slice';
+            s.style.transform = 'translateZ(calc(var(--d) * ' + f.toFixed(4) + '))';
+            var im = document.createElement('img');
+            im.src = 'pokemon-red-side.png';
+            im.alt = '';
+            // luz mais forte perto da frente, mais escura perto do verso
+            im.style.filter = 'brightness(' + (0.80 + 0.40 * (f + 0.5)).toFixed(3) + ')';
+            s.appendChild(im);
+            cart.insertBefore(s, front);
+        }
+
+        var rx = -8, ry = -25;          // rotação atual
+        var vy = 0;                      // inércia do giro
+        var dragging = false;
+        var lastX = 0, lastY = 0;
+        var lastInteract = 0;
+        var rafId = null;
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function norm(a) { return ((a + 180) % 360 + 360) % 360 - 180; }
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+        function render() {
+            cart.style.transform = 'rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)';
+            front.style.setProperty('--shine', (50 + norm(ry) * 1.6).toFixed(1) + '%');
+        }
+
+        function tick(t) {
+            if (!dragging) {
+                if (Math.abs(vy) > 0.05) {
+                    ry += vy;
+                    vy *= 0.94;
+                    lastInteract = t;
+                } else if (t - lastInteract > 2000) {
+                    ry = norm(ry);
+                    var targetY = reduceMotion ? -18 : Math.sin(t / 1800) * 28;
+                    var targetX = reduceMotion ? -6  : -6 + Math.sin(t / 2600) * 4;
+                    ry += (targetY - ry) * 0.04;
+                    rx += (targetX - rx) * 0.04;
+                }
+            }
+            render();
+            rafId = requestAnimationFrame(tick);
+        }
+
+        scene.addEventListener('pointerdown', function (e) {
+            dragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            vy = 0;
+            scene.classList.add('grabbing');
+            try { scene.setPointerCapture(e.pointerId); } catch (err) {}
         });
-
-        card.addEventListener('mouseleave', () => {
-            cartridge.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
-            cartridge.style.transition = 'transform 0.5s ease';
+        scene.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX;
+            var dy = e.clientY - lastY;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            ry += dx * 0.6;
+            vy = dx * 0.6;
+            rx = clamp(rx - dy * 0.4, -50, 50);
+            lastInteract = performance.now();
         });
+        function endDrag() {
+            dragging = false;
+            scene.classList.remove('grabbing');
+            lastInteract = performance.now();
+        }
+        scene.addEventListener('pointerup', endDrag);
+        scene.addEventListener('pointercancel', endDrag);
+        scene.addEventListener('pointerleave', function () { if (dragging) endDrag(); });
 
-        card.addEventListener('mouseenter', () => {
-            cartridge.style.transition = 'none';
-        });
+        render();
+        rafId = requestAnimationFrame(tick);
 
-        // Inicialização do Emulador
-        document.getElementById('play-btn').addEventListener('click', function() {
+        /* ================== EMULADOR ================== */
+        // A ROM é procurada nesta ordem; usa a primeira que responder corretamente.
+        var ROM_CANDIDATES = [
+            'Pokemon%20-%20Red%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb',
+            'Pokemon_-_Red_Version__USA__Europe___SGB_Enhanced_.gb',
+            'pokemon-red.gb'
+        ];
+        var started = false;
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"]/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+            });
+        }
+
+        function showError(msg, details) {
+            var html = '<b class="err">Erro ao iniciar o jogo</b><br><br>' + msg;
+            if (details && details.length) {
+                html += '<br><br><b>Resultado dos testes:</b>';
+                details.forEach(function (d) { html += '<code>' + escapeHtml(d) + '</code>'; });
+            }
+            html += '<button onclick="location.reload()">Voltar ao menu</button>';
+            var box = document.getElementById('error-box');
+            box.innerHTML = html;
+            box.classList.add('active');
+            document.getElementById('game-container').classList.remove('active');
+            document.body.classList.remove('playing');
+            started = false;
+            document.getElementById('play-btn').disabled = false;
+        }
+
+        async function findRom() {
+            var log = [];
+            for (var i = 0; i < ROM_CANDIDATES.length; i++) {
+                var url = new URL(ROM_CANDIDATES[i], window.location.href).href;
+                try {
+                    var r = await fetch(url, { method: 'HEAD' });
+                    if (!r.ok) { log.push('HTTP ' + r.status + ' → ' + url); continue; }
+                    var type = (r.headers.get('content-type') || '').toLowerCase();
+                    var size = parseInt(r.headers.get('content-length') || '0', 10);
+                    if (type.indexOf('text/html') !== -1) { log.push('Retornou uma página HTML (não é a ROM) → ' + url); continue; }
+                    if (size && size < 50000) { log.push('Arquivo muito pequeno (' + size + ' bytes) → ' + url); continue; }
+                    return { url: url, log: log };
+                } catch (e) {
+                    log.push('Falha de rede/CORS → ' + url);
+                }
+            }
+            return { url: null, log: log };
+        }
+
+        async function startEmulator() {
+            if (started) return;
+            started = true;
+            var btn = document.getElementById('play-btn');
+            btn.disabled = true;
+            btn.textContent = 'CARREGANDO...';
+
+            var found = await findRom();
+            btn.textContent = 'JOGAR AGORA';
+
+            if (!found.url) {
+                showError(
+                    'Não consegui baixar a ROM. Confira se o arquivo <b>.gb</b> está na mesma pasta do index.html, ' +
+                    'com o nome igual ao da lista abaixo, se tem cerca de <b>1 MB</b> no GitHub ' +
+                    'e se o repositório está <b>público</b>. Abra pelo link do GitHub Pages, não pelo arquivo local.',
+                    found.log
+                );
+                return;
+            }
+
+            // Para a animação do cartucho para poupar processamento
+            if (rafId) cancelAnimationFrame(rafId);
+
             document.getElementById('header-bar').style.display = 'none';
             document.getElementById('game-card').style.display = 'none';
-            
-            var container = document.getElementById('game-container');
-            container.style.display = 'block';
+            document.getElementById('game-container').classList.add('active');
+            document.body.classList.add('playing');
 
             window.EJS_player = '#game';
             window.EJS_core = 'gb';
-            window.EJS_gameName = "Pokemon - Red Version";
+            window.EJS_gameName = 'Pokemon - Red Version';
             window.EJS_color = '#c92a2a';
+            window.EJS_language = 'pt-BR';
             window.EJS_startOnLoaded = true;
             window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
-            window.EJS_gameUrl = 'Pokemon%20-%20Red%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb';
+            window.EJS_gameUrl = found.url;
 
             var script = document.createElement('script');
-            script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-            script.async = true;
+            script.src = window.EJS_pathtodata + 'loader.js';
+            script.onerror = function () {
+                showError('Não foi possível carregar o EmulatorJS (cdn.emulatorjs.org). Verifique sua internet ou se algum bloqueador está impedindo.');
+            };
             document.body.appendChild(script);
-        });
+        }
+
+        document.getElementById('play-btn').addEventListener('click', startEmulator);
+        document.getElementById('btn-back').addEventListener('click', function () { location.reload(); });
     </script>
 </body>
 </html>
