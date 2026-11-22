@@ -432,7 +432,7 @@
             <div class="meta-info">
                 <span>🎮 1 Jogador</span>
                 <span>📅 1996 / 1998</span>
-                <span>🕹️ Nintendo (GB / GBC Color)</span>
+                <span>🕹️ Nintendo (GB)</span>
             </div>
 
             <p class="description">
@@ -488,7 +488,7 @@
             cartridge.style.transition = 'none';
         });
 
-        /* Inicialização EmulatorJS com colorização GBC para jogos de GB */
+        /* Inicialização EmulatorJS */
         document.getElementById('play-btn').addEventListener('click', function() {
 
             document.getElementById('header-bar').style.display = 'none';
@@ -498,7 +498,7 @@
             container.style.display = 'block';
 
             window.EJS_player = '#game';
-            window.EJS_core = 'gbc';
+            window.EJS_core = 'gb';
             window.EJS_gameName = 'Pokemon - Red Version';
             window.EJS_color = '#c92a2a';
             window.EJS_colorization = true;
