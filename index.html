@@ -97,7 +97,7 @@
         .cart .front::after {
             content: '';
             position: absolute;
-            inset: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(
                 105deg,
                 transparent calc(var(--shine) - 16%),
@@ -187,7 +187,7 @@
         }
         body.playing #btn-back { display: block; }
 
-        #error-box { display: none; position: fixed; inset: 0; z-index: 100001; background: #121212; padding: 24px; overflow-y: auto; line-height: 1.6; font-size: 14px; }
+        #error-box { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100001; background: #121212; padding: 24px; overflow-y: auto; line-height: 1.6; font-size: 14px; }
         #error-box.active { display: block; }
         #error-box b.err { color: #e74c3c; }
         #error-box code { display: block; background: #1e1e1e; padding: 8px; border-radius: 4px; margin: 4px 0; word-break: break-all; font-size: 12px; color: #ccc; }
@@ -209,7 +209,7 @@
         <!-- Cartucho 3D: frente (foto), fatias (espessura) e verso -->
         <div class="scene" id="scene">
             <div class="cart" id="cart">
-                <div class="back"><img src="pokemon-red-back.png" alt=""></div>
+                <div class="back" id="back"><img src="pokemon-red-back.png" alt=""></div>
                 <div class="front" id="front"><img src="pokemon-red-cartridge.png" alt="Cartucho Pokémon: Red Version"></div>
             </div>
             <div class="floor-shadow"></div>
@@ -253,21 +253,61 @@
         var cart  = document.getElementById('cart');
         var front = document.getElementById('front');
 
-        // Espessura: várias cópias da silhueta empilhadas entre a frente e o verso
+        // Espessura: cópias da silhueta empilhadas entre a frente e o verso.
+        // Sem filtros CSS nas fatias (o Safari/iOS perde a ordem 3D com "filter"):
+        // o sombreamento é gerado em canvas e tudo é posicionado em pixels.
+        var backEl = document.getElementById('back');
         var SLICES = 36;
-        for (var i = 0; i < SLICES; i++) {
-            var f = ((i + 0.5) / SLICES) - 0.5;            // -0.5 (verso) ... +0.5 (frente)
-            var s = document.createElement('div');
-            s.className = 'slice';
-            s.style.transform = 'translateZ(calc(var(--d) * ' + f.toFixed(4) + '))';
-            var im = document.createElement('img');
-            im.src = 'pokemon-red-side.png';
-            im.alt = '';
-            // luz mais forte perto da frente, mais escura perto do verso
-            im.style.filter = 'brightness(' + (0.80 + 0.40 * (f + 0.5)).toFixed(3) + ')';
-            s.appendChild(im);
-            cart.insertBefore(s, front);
+        var SHADES = [-0.34, -0.24, -0.14, -0.05, 0.04, 0.12];   // do verso (escuro) à frente (claro)
+        var slices = [];
+
+        function shadedUrl(img, shade) {
+            var c = document.createElement('canvas');
+            c.width = img.naturalWidth;
+            c.height = img.naturalHeight;
+            var g = c.getContext('2d');
+            g.drawImage(img, 0, 0);
+            g.globalCompositeOperation = 'source-atop';
+            g.fillStyle = shade < 0 ? 'rgba(0,0,0,' + (-shade) + ')' : 'rgba(255,255,255,' + shade + ')';
+            g.fillRect(0, 0, c.width, c.height);
+            return c.toDataURL('image/png');
         }
+
+        function layout() {
+            var d = cart.offsetWidth * 0.14;               // espessura em pixels
+            var edge = (d / 2 + 0.8).toFixed(2);           // frente/verso um pouco à frente das fatias
+            front.style.transform = 'translateZ(' + edge + 'px)';
+            backEl.style.transform = 'rotateY(180deg) translateZ(' + edge + 'px)';
+            for (var i = 0; i < slices.length; i++) {
+                var f = ((i + 0.5) / slices.length) - 0.5;
+                slices[i].style.transform = 'translateZ(' + (d * f * 0.96).toFixed(2) + 'px)';
+            }
+        }
+
+        var sideImg = new Image();
+        sideImg.onload = function () {
+            var urls = [];
+            for (var k = 0; k < SHADES.length; k++) {
+                try { urls.push(shadedUrl(sideImg, SHADES[k])); }
+                catch (e) { urls.push('pokemon-red-side.png'); }
+            }
+            for (var i = 0; i < SLICES; i++) {
+                var t = (i + 0.5) / SLICES;
+                var sl = document.createElement('div');
+                sl.className = 'slice';
+                var im = document.createElement('img');
+                im.alt = '';
+                im.src = urls[Math.min(SHADES.length - 1, Math.floor(t * SHADES.length))];
+                sl.appendChild(im);
+                cart.insertBefore(sl, front);
+                slices.push(sl);
+            }
+            layout();
+        };
+        sideImg.src = 'pokemon-red-side.png';
+        layout();
+        window.addEventListener('resize', layout);
+        window.addEventListener('orientationchange', layout);
 
         var rx = -8, ry = -25;          // rotação atual
         var vy = 0;                      // inércia do giro
