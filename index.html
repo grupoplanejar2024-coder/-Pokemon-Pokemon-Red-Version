@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -7,7 +6,7 @@
     <title>Pokémon: Red Version - Kubo Touch</title>
 
     <style>
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
         }
 
@@ -433,7 +432,7 @@
             <div class="meta-info">
                 <span>🎮 1 Jogador</span>
                 <span>📅 1996 / 1998</span>
-                <span>🕹️ Nintendo (GB)</span>
+                <span>🕹️ Nintendo (GB / GBC Color)</span>
             </div>
 
             <p class="description">
@@ -489,7 +488,7 @@
             cartridge.style.transition = 'none';
         });
 
-        /* Inicialização EmulatorJS */
+        /* Inicialização EmulatorJS com colorização GBC para jogos de GB */
         document.getElementById('play-btn').addEventListener('click', function() {
 
             document.getElementById('header-bar').style.display = 'none';
@@ -499,9 +498,10 @@
             container.style.display = 'block';
 
             window.EJS_player = '#game';
-            window.EJS_core = 'gb';
+            window.EJS_core = 'gbc';
             window.EJS_gameName = 'Pokemon - Red Version';
             window.EJS_color = '#c92a2a';
+            window.EJS_colorization = true;
             window.EJS_startOnLoaded = true;
             window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
 
